@@ -28,5 +28,17 @@
         android:layout_height="wrap_content"
         android:text="Stop Pedometer"
         />
+    <Button
+        android:id="@+id/btn_export"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Export Data"
+        />
+    <Button
+        android:id="@+id/btn_exit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exit"
+        />
 
 </LinearLayout>

@@ -28,9 +28,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor accel;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
     private int numSteps;
+
     private TextView TvSteps;
+
     private Button BtnStart;
     private Button BtnStop;
+    private Button BtnExport;
+    private Button BtnExit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,35 +51,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         TvSteps = findViewById(R.id.tv_steps);
         BtnStart = findViewById(R.id.btn_start);
         BtnStop = findViewById(R.id.btn_stop);
+        BtnExport = findViewById(R.id.btn_export);
+        BtnExit = findViewById(R.id.btn_exit);
 
 
-
-        BtnStart.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-
-                numSteps = 0;
-                sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
-
-            }
+        BtnStart.setOnClickListener((View v) -> {
+            numSteps = 0;
+            sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
         });
 
 
-        BtnStop.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-
-                sensorManager.unregisterListener(MainActivity.this);
-
-            }
-        });
-
+        BtnStop.setOnClickListener((View v) ->
+                sensorManager.unregisterListener(MainActivity.this)
+        );
 
 
     }
-
 
 
     @Override

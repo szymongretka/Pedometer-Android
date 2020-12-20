@@ -1,5 +1,8 @@
 package pl.paum.pedometer.listener;
 
+/**
+ * Interface listening to alerts about steps being detected.
+ */
 public interface StepListener {
-    public void step(long timeNs);
+    void step(long timeNs);
 }

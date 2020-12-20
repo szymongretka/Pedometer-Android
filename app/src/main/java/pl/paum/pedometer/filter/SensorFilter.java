@@ -1,5 +1,9 @@
 package pl.paum.pedometer.filter;
 
+/**
+ * Class with an algorithm to filter out values that has close approximation to steps
+ *
+ */
 public class SensorFilter {
 
     private SensorFilter() {
