@@ -1,24 +1,30 @@
 package pl.paum.pedometer;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.List;
+
 import pl.paum.pedometer.detector.StepDetector;
+import pl.paum.pedometer.handler.DataHandler;
+import pl.paum.pedometer.handler.impl.DataHandlerImpl;
 import pl.paum.pedometer.listener.StepListener;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
@@ -33,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private Button BtnStart;
     private Button BtnStop;
+    private Button BtnSave;
     private Button BtnExport;
     private Button BtnExit;
 
@@ -40,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        DataHandler dataHandler = new DataHandlerImpl(MainActivity.this);
 
         // Get an instance of the SensorManager
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -53,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BtnStop = findViewById(R.id.btn_stop);
         BtnExport = findViewById(R.id.btn_export);
         BtnExit = findViewById(R.id.btn_exit);
+        BtnSave = findViewById(R.id.btn_save);
 
 
         BtnStart.setOnClickListener((View v) -> {
@@ -63,6 +71,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         BtnStop.setOnClickListener((View v) ->
                 sensorManager.unregisterListener(MainActivity.this)
+        );
+
+        BtnSave.setOnClickListener((View v) -> {
+                    dataHandler.saveToMemory(numSteps);
+                }
+        );
+
+        BtnExport.setOnClickListener((View v) -> {
+                    dataHandler.exportDataToCsv();
+                }
+        );
+
+        BtnExit.setOnClickListener((View v) -> {
+                    finish();
+                    System.exit(0);
+                }
         );
 
 
