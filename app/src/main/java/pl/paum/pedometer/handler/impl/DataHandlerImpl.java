@@ -6,16 +6,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.widget.Toast;
+import android.os.Build;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.FileProvider;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Calendar;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,31 +23,62 @@ import pl.paum.pedometer.handler.DataHandler;
 public class DataHandlerImpl implements DataHandler {
 
     private Context applicationContext;
-    private int currentHour;
-    private String mapKey;
 
     public DataHandlerImpl(Context context) {
         this.applicationContext = context.getApplicationContext();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void saveToMemory(int numOfSteps) {
-        currentHour = Calendar.HOUR_OF_DAY;
-        Map<String, Integer> inputMap = new HashMap<>();
-        inputMap.put(String.valueOf(currentHour), numOfSteps);
-        saveMap(inputMap);
-        Toast.makeText(applicationContext, "Saved Locally!", Toast.LENGTH_SHORT).show();
+        LocalDateTime currentTime = LocalDateTime.now();
+        SharedPreferences pSharedPref = applicationContext
+                .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
+        if (pSharedPref != null) {
+            SharedPreferences.Editor editor = pSharedPref.edit();
+            editor.putString(currentTime.toString(), String.valueOf(numOfSteps));
+            editor.apply();
+        }
     }
 
     @Override
     public void exportDataToCsv() {
-
+        SharedPreferences pSharedPref = applicationContext
+                .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
+        Map<String, ?> sharedPrefMap = pSharedPref.getAll();
         //generate data
         StringBuilder data = new StringBuilder();
-        data.append("Time,Distance");
-        for (int i = 0; i < 5; i++) {
-            data.append("\n" + String.valueOf(i) + "," + String.valueOf(i * i));
+
+        data.append("Time/Date, ");
+
+        for (int i = 0; i < 24; i++) {
+            String hour = String.valueOf(i);
+            if (i < 10) {
+                hour = "0".concat(String.valueOf(i));
+            }
+            for (int j = 0; j < 60; j++) {
+                String minute = String.valueOf(j);
+                if (j < 10) {
+                    minute = "0".concat(String.valueOf(j));
+                }
+                data.append(hour.concat(":").concat(minute).concat(", "));
+            }
         }
+
+        Map<String, String> sortedMap = new LinkedHashMap<>();
+
+        sharedPrefMap.forEach((key, value) -> {
+            String dateKey = key.substring(0, key.indexOf('T'));
+            if (!sortedMap.containsKey(dateKey)) {
+                sortedMap.put(dateKey, ", ".concat(String.valueOf(value)));
+            } else {
+                sortedMap.computeIfPresent(dateKey, (k, v) -> v.concat(", ").concat(String.valueOf(value)));
+            }
+        });
+
+        sortedMap.forEach((key, value) -> {
+            data.append("\n".concat(key).concat(value));
+        });
 
         try {
             //saving the file into device
@@ -83,23 +113,6 @@ public class DataHandlerImpl implements DataHandler {
             applicationContext.startActivity(chooser);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void saveMap(Map<String, Integer> inputMap) {
-        mapKey = Calendar.getInstance().getTime().toString();
-        SharedPreferences pSharedPref = applicationContext
-                .getSharedPreferences("MyDailyReport", Context.MODE_PRIVATE);
-        if (pSharedPref != null) {
-            JSONObject jsonObject = new JSONObject(inputMap);
-            String jsonString = jsonObject.toString();
-            SharedPreferences.Editor editor = pSharedPref.edit();
-            if (pSharedPref.contains(mapKey)) {
-                editor.putString(mapKey, jsonString); //TODO
-            } else {
-                editor.putString(mapKey, jsonString);
-            }
-            editor.apply();
         }
     }
 
