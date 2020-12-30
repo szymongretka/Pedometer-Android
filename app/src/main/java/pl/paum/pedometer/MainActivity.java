@@ -1,26 +1,21 @@
 package pl.paum.pedometer;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.List;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import pl.paum.pedometer.detector.StepDetector;
 import pl.paum.pedometer.handler.DataHandler;
@@ -33,13 +28,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accel;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
-    private int numSteps;
+
+    private static int NUM_OF_STEPS = 0;
+    private static int PREVIOUS_NUM_OF_STEPS = 0;
+
+    private final static int POLL_PERIOD_SEC = 60;
+    private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> scheduledTask;
 
     private TextView TvSteps;
 
     private Button BtnStart;
     private Button BtnStop;
-    private Button BtnSave;
     private Button BtnExport;
     private Button BtnExit;
 
@@ -48,6 +48,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         DataHandler dataHandler = new DataHandlerImpl(MainActivity.this);
+
+        scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
+            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
+            dataHandler.saveToMemory(stepDiff);
+        }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
 
         // Get an instance of the SensorManager
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -60,23 +66,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BtnStop = findViewById(R.id.btn_stop);
         BtnExport = findViewById(R.id.btn_export);
         BtnExit = findViewById(R.id.btn_exit);
-        BtnSave = findViewById(R.id.btn_save);
 
 
         BtnStart.setOnClickListener((View v) -> {
-            numSteps = 0;
+            NUM_OF_STEPS = 0;
             sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+            Toast.makeText(this, "Started!", Toast.LENGTH_SHORT).show();
         });
 
 
-        BtnStop.setOnClickListener((View v) ->
-                sensorManager.unregisterListener(MainActivity.this)
-        );
-
-        BtnSave.setOnClickListener((View v) -> {
-                    dataHandler.saveToMemory(numSteps);
+        BtnStop.setOnClickListener((View v) -> {
+                    sensorManager.unregisterListener(MainActivity.this);
+                    Toast.makeText(this, "Stopped!", Toast.LENGTH_SHORT).show();
                 }
         );
+
 
         BtnExport.setOnClickListener((View v) -> {
                     dataHandler.exportDataToCsv();
@@ -106,9 +110,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //TODO: save collection to file
+        scheduledTask.cancel(false);
+    }
+
+    @Override
     public void step(long timeNs) {
-        numSteps++;
-        TvSteps.setText(TEXT_NUM_STEPS + numSteps);
+        NUM_OF_STEPS++;
+        TvSteps.setText(TEXT_NUM_STEPS + NUM_OF_STEPS);
     }
 
 }
