@@ -10,16 +10,16 @@ public class SensorFilter {
     }
 
     public static float sum(float[] array) {
-        float retval = 0;
-        for (int i = 0; i < array.length; i++) {
-            retval += array[i];
+        float arraySum = 0;
+        for (float aFloat : array) {
+            arraySum += aFloat;
         }
-        return retval;
+        return arraySum;
     }
 
-    public static float[] cross(float[] arrayA, float[] arrayB) {
+    public static float[] crossProduct(float[] arrayA, float[] arrayB) {
         float[] retArray = new float[3];
-        retArray[0] = arrayA[1] * arrayB[2] - arrayA[2] * arrayB[1];
+        retArray[0] = arrayA[1] * arrayB[2] - arrayA[2] * arrayB[1]; //
         retArray[1] = arrayA[2] * arrayB[0] - arrayA[0] * arrayB[2];
         retArray[2] = arrayA[0] * arrayB[1] - arrayA[1] * arrayB[0];
         return retArray;

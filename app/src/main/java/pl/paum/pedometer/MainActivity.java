@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accel;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
+    private final static int ACCELEROMETER_EVENTS_SAMPLING_PERIOD = 500_000; // [500_000,2_000_000]
 
     private static int NUM_OF_STEPS = 0;
     private static int PREVIOUS_NUM_OF_STEPS = 0;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         BtnStart.setOnClickListener((View v) -> {
             NUM_OF_STEPS = 0;
-            sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(MainActivity.this, accel, ACCELEROMETER_EVENTS_SAMPLING_PERIOD);
             Toast.makeText(this, "Started!", Toast.LENGTH_SHORT).show();
         });
 
