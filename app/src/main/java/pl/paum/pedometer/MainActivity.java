@@ -22,12 +22,15 @@ import pl.paum.pedometer.handler.DataHandler;
 import pl.paum.pedometer.handler.impl.ButtonActionsHandlerImpl;
 import pl.paum.pedometer.handler.impl.DataHandlerImpl;
 import pl.paum.pedometer.listener.StepListener;
+import pl.paum.pedometer.util.AppSharedCtx;
+
+import static pl.paum.pedometer.util.AppSharedCtx.NUM_OF_STEPS;
+import static pl.paum.pedometer.util.AppSharedCtx.PREVIOUS_NUM_OF_STEPS;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
     private TextView textView;
     private StepDetector simpleStepDetector;
-    private SensorManager sensorManager;
-    private Sensor accel;
+    private AppSharedCtx appSharedCtx;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
 
     private final static int POLL_PERIOD_SEC = 60;
@@ -36,9 +39,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView TvSteps;
 
-    public final static int ACCELEROMETER_EVENTS_SAMPLING_PERIOD = 500_000;
-    public static int NUM_OF_STEPS = 0;
-    public static int PREVIOUS_NUM_OF_STEPS = 0;
 
     private Button BtnStart;
     private Button BtnStop;
@@ -50,9 +50,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Get an instance of the SensorManager
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        appSharedCtx = new AppSharedCtx((SensorManager) getSystemService(SENSOR_SERVICE));
+
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
@@ -71,14 +70,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BtnExport = findViewById(R.id.btn_export);
         BtnExit = findViewById(R.id.btn_exit);
 
-        BtnStart.setOnClickListener((View v) -> {
-            sensorManager.registerListener(MainActivity.this, accel, ACCELEROMETER_EVENTS_SAMPLING_PERIOD);
-            buttonActionsHandler.startButtonAction();
-        });
-        BtnStop.setOnClickListener((View v) -> {
-            sensorManager.unregisterListener(MainActivity.this);
-            buttonActionsHandler.stopButtonAction();
-        });
+        BtnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
+        BtnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
         BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
         BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
 
@@ -110,4 +103,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
     }
 
+    public AppSharedCtx getAppSharedCtx() {
+        return appSharedCtx;
+    }
 }
