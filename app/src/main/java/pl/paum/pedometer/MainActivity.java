@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,7 +17,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import pl.paum.pedometer.detector.StepDetector;
+import pl.paum.pedometer.handler.ButtonActionsHandler;
 import pl.paum.pedometer.handler.DataHandler;
+import pl.paum.pedometer.handler.impl.ButtonActionsHandlerImpl;
 import pl.paum.pedometer.handler.impl.DataHandlerImpl;
 import pl.paum.pedometer.listener.StepListener;
 
@@ -28,16 +29,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accel;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
-    private final static int ACCELEROMETER_EVENTS_SAMPLING_PERIOD = 500_000; // [500_000,2_000_000]
-
-    private static int NUM_OF_STEPS = 0;
-    private static int PREVIOUS_NUM_OF_STEPS = 0;
 
     private final static int POLL_PERIOD_SEC = 60;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledTask;
 
     private TextView TvSteps;
+
+    public final static int ACCELEROMETER_EVENTS_SAMPLING_PERIOD = 500_000;
+    public static int NUM_OF_STEPS = 0;
+    public static int PREVIOUS_NUM_OF_STEPS = 0;
 
     private Button BtnStart;
     private Button BtnStop;
@@ -48,13 +49,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DataHandler dataHandler = new DataHandlerImpl(MainActivity.this);
-
-        scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
-            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
-            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
-            dataHandler.saveToMemory(stepDiff);
-        }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
 
         // Get an instance of the SensorManager
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -62,38 +56,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
+        DataHandler dataHandler = new DataHandlerImpl(this);
+        ButtonActionsHandler buttonActionsHandler = new ButtonActionsHandlerImpl(this);
+
+        scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
+            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
+            dataHandler.saveToMemory(stepDiff);
+        }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
+
         TvSteps = findViewById(R.id.tv_steps);
         BtnStart = findViewById(R.id.btn_start);
         BtnStop = findViewById(R.id.btn_stop);
         BtnExport = findViewById(R.id.btn_export);
         BtnExit = findViewById(R.id.btn_exit);
 
-
         BtnStart.setOnClickListener((View v) -> {
-            NUM_OF_STEPS = 0;
             sensorManager.registerListener(MainActivity.this, accel, ACCELEROMETER_EVENTS_SAMPLING_PERIOD);
-            Toast.makeText(this, "Started!", Toast.LENGTH_SHORT).show();
+            buttonActionsHandler.startButtonAction();
         });
-
-
         BtnStop.setOnClickListener((View v) -> {
-                    sensorManager.unregisterListener(MainActivity.this);
-                    Toast.makeText(this, "Stopped!", Toast.LENGTH_SHORT).show();
-                }
-        );
-
-
-        BtnExport.setOnClickListener((View v) -> {
-                    dataHandler.exportDataToCsv();
-                }
-        );
-
-        BtnExit.setOnClickListener((View v) -> {
-                    finish();
-                    System.exit(0);
-                }
-        );
-
+            sensorManager.unregisterListener(MainActivity.this);
+            buttonActionsHandler.stopButtonAction();
+        });
+        BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
+        BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
 
     }
 
@@ -120,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void step(long timeNs) {
         NUM_OF_STEPS++;
-        TvSteps.setText(TEXT_NUM_STEPS + NUM_OF_STEPS);
+        TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
     }
 
 }

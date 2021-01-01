@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="#ED1D1D1F"
+    android:backgroundTint="#F81F1E20"
+    android:gravity="center"
+    android:orientation="vertical">
 
 
     <TextView
         android:id="@+id/tv_steps"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        />
+        android:layout_height="52dp"
+        android:gravity="center" />
 
 
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="match_parent"
+        android:layout_width="158dp"
         android:layout_height="wrap_content"
-        android:text="Start Pedometer"
-        />
+        android:text="Start Pedometer" />
 
     <Button
         android:id="@+id/btn_stop"
-        android:layout_width="match_parent"
+        android:layout_width="158dp"
         android:layout_height="wrap_content"
-        android:text="Stop Pedometer"
-        />
+        android:text="Stop Pedometer" />
+
     <Button
         android:id="@+id/btn_export"
-        android:layout_width="match_parent"
+        android:layout_width="158dp"
         android:layout_height="wrap_content"
-        android:text="Export Data"
-        />
+        android:text="Export Data" />
+
     <Button
         android:id="@+id/btn_exit"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Exit"
-        />
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        android:text="Exit" />
 
 </LinearLayout>
