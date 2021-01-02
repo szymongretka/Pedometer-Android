@@ -5,6 +5,7 @@ import android.hardware.SensorManager;
 import android.widget.Toast;
 
 import pl.paum.pedometer.MainActivity;
+import pl.paum.pedometer.R;
 import pl.paum.pedometer.handler.ButtonActionsHandler;
 
 import static pl.paum.pedometer.util.AppSharedCtx.ACCELEROMETER_EVENTS_SAMPLING_PERIOD;
@@ -21,14 +22,14 @@ public class ButtonActionsHandlerImpl implements ButtonActionsHandler {
     @Override
     public void exitButtonAction() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-        builder.setTitle("Exit");
-        builder.setMessage("Do you want to exit ??");
-        builder.setPositiveButton("Yes. Exit now!", (dialog, which) -> {
+        builder.setTitle(mainActivity.getResources().getString(R.string.exit));
+        builder.setMessage(mainActivity.getResources().getString(R.string.exit_message));
+        builder.setPositiveButton(mainActivity.getResources().getString(R.string.exit_confirmation), (dialog, which) -> {
             mainActivity.finish();
             System.exit(0);
         });
 
-        builder.setNegativeButton("Not now", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton(mainActivity.getResources().getString(R.string.exit_deny), (dialog, which) -> dialog.dismiss());
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -38,7 +39,7 @@ public class ButtonActionsHandlerImpl implements ButtonActionsHandler {
     public void startButtonAction() {
         getSensorManager().registerListener(mainActivity, mainActivity.getAppSharedCtx().getAccel(),
                 ACCELEROMETER_EVENTS_SAMPLING_PERIOD);
-        Toast.makeText(mainActivity, "Started!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mainActivity, mainActivity.getResources().getString(R.string.toast_started), Toast.LENGTH_SHORT).show();
     }
 
     @Override
