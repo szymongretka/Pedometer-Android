@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pedometer</string>
+    <string name="action_settings">Ustawienia</string>
+    <string name="exit">Wyjście</string>
+    <string name="export">Eksport</string>
+    <string name="daily_text">Twoja dzienna ilość kroków:</string>
+    <string name="exit_message">Czy napewno chcesz wyjść?</string>
+    <string name="exit_confirmation">Tak. Wyjdź teraz!</string>
+    <string name="exit_deny">Nie. Nie teraz.</string>
+    <string name="toast_started">Wystartowano!</string>
+    <string name="toast_stopped">Zatrzymano!</string>
+</resources>
