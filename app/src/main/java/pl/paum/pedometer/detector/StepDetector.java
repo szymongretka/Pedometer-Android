@@ -11,7 +11,7 @@ public class StepDetector {
     // change this threshold according to your sensitivity preferences
     private static final float STEP_THRESHOLD = 50f;
 
-    private static final int STEP_DELAY_NS = 250000000;
+    private static final int STEP_DELAY_NS = SensorManager.SENSOR_DELAY_FASTEST; //250000000;
 
     private int accelRingCounter = 0;
     private float[] accelRingX = new float[ACCEL_RING_SIZE];
