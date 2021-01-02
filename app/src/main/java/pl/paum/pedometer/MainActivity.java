@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView TvSteps;
 
-
     private Button BtnStart;
     private Button BtnStop;
     private Button BtnExport;
@@ -58,11 +57,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         DataHandler dataHandler = new DataHandlerImpl(this);
         ButtonActionsHandler buttonActionsHandler = new ButtonActionsHandlerImpl(this);
 
-        scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
-            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
-            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
-            dataHandler.saveToMemory(stepDiff);
-        }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
+        NUM_OF_STEPS = dataHandler.getDailyNumOfSteps();
+        PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
 
         TvSteps = findViewById(R.id.tv_steps);
         BtnStart = findViewById(R.id.btn_start);
@@ -72,11 +68,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         BtnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
         BtnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
-        BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
         BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
+        BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
 
+        TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
+        scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
+            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
+            dataHandler.saveToMemory(stepDiff);
+        }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
     }
-
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
