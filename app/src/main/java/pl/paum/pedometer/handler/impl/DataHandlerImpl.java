@@ -13,27 +13,30 @@ import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import pl.paum.pedometer.handler.DataHandler;
 
 public class DataHandlerImpl implements DataHandler {
 
     private Context applicationContext;
+    private SharedPreferences pSharedPref;
 
     public DataHandlerImpl(Context context) {
         this.applicationContext = context.getApplicationContext();
+        this.pSharedPref = applicationContext
+                .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void saveToMemory(int numOfSteps) {
         LocalDateTime currentTime = LocalDateTime.now();
-        SharedPreferences pSharedPref = applicationContext
-                .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
         if (pSharedPref != null) {
             SharedPreferences.Editor editor = pSharedPref.edit();
             editor.putString(currentTime.toString(), String.valueOf(numOfSteps));
@@ -43,8 +46,6 @@ public class DataHandlerImpl implements DataHandler {
 
     @Override
     public void exportDataToCsv() {
-        SharedPreferences pSharedPref = applicationContext
-                .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
         Map<String, ?> sharedPrefMap = pSharedPref.getAll();
         //generate data
         StringBuilder data = new StringBuilder();
@@ -114,6 +115,21 @@ public class DataHandlerImpl implements DataHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public Integer getDailyNumOfSteps() {
+        AtomicInteger sum = new AtomicInteger(0);
+        Map<String, ?> sharedPrefMap = pSharedPref.getAll();
+        LocalDate currentDate = LocalDateTime.now().toLocalDate();
+
+        sharedPrefMap.forEach((key, value) -> {
+            if(key.substring(0, key.indexOf('T')).equals(currentDate.toString())) {
+                sum.addAndGet(Integer.parseInt((String) value));
+            }
+        });
+
+        return sum.get();
     }
 
 }
