@@ -45,7 +45,7 @@ public class ButtonActionsHandlerImpl implements ButtonActionsHandler {
     @Override
     public void stopButtonAction() {
         getSensorManager().unregisterListener(mainActivity);
-        Toast.makeText(mainActivity, "Stopped!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mainActivity, mainActivity.getResources().getString(R.string.toast_stopped), Toast.LENGTH_SHORT).show();
     }
 
     private SensorManager getSensorManager() {
