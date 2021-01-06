@@ -8,6 +8,7 @@ public class AppSharedCtx extends AppSharedSensorMgmt{
     public static int NUM_OF_STEPS;
     public static int PREVIOUS_NUM_OF_STEPS;
     public final static int POLL_PERIOD_SEC = 60;
+    public final static int POLL_PERIOD_SEC_EXPORT = 300;
 
     public AppSharedCtx(SensorManager sensorManager) {
         super(sensorManager);

@@ -33,6 +33,8 @@ public class DataHandlerImpl implements DataHandler {
     private SharedPreferences pSharedPref;
     private Map<String, ?> sharedPrefMap;
 
+    private int interval = AppSharedCtx.POLL_PERIOD_SEC_EXPORT/60;
+
     public DataHandlerImpl(Context context) {
         this.applicationContext = context.getApplicationContext();
         this.pSharedPref = applicationContext
@@ -56,6 +58,8 @@ public class DataHandlerImpl implements DataHandler {
         //generate data
         StringBuilder data = new StringBuilder();
 
+        int samples = (int)(((float)60/AppSharedCtx.POLL_PERIOD_SEC_EXPORT)*60);
+
         data.append("Time/Date, ");
 
         for (int i = 0; i < 24; i++) {
@@ -63,10 +67,10 @@ public class DataHandlerImpl implements DataHandler {
             if (i < 10) {
                 hour = "0".concat(String.valueOf(i));
             }
-            for (int j = 0; j < 60; j++) {
-                String minute = String.valueOf(j);
-                if (j < 10) {
-                    minute = "0".concat(String.valueOf(j));
+            for (int j = 0; j < samples; j++) {
+                String minute = String.valueOf(j*interval);
+                if (j*interval < 10) {
+                    minute = "0".concat(minute);
                 }
                 data.append(hour.concat(":").concat(minute).concat(", "));
             }
@@ -137,7 +141,7 @@ public class DataHandlerImpl implements DataHandler {
     private Map<String, String> generateValuesMap(Map<LocalDate, LinkedList<LocalTime>> dateTimeMap) {
         Map<String, String> map = new LinkedHashMap<>();
 
-        int numOfRecords = 24 * 60 * (60 / AppSharedCtx.POLL_PERIOD_SEC);
+        int numOfRecords = (int)(24 * 60 * ((float)60 / AppSharedCtx.POLL_PERIOD_SEC_EXPORT));
 
         for (LocalDate key : dateTimeMap.keySet()) {
             String dateKey = key.toString();
@@ -151,10 +155,10 @@ public class DataHandlerImpl implements DataHandler {
 
             StringBuilder stringBuilder = new StringBuilder();
 
-            for (int i = 0; i < numOfRecords; i++) {
+            for (int i = 1; i <= numOfRecords; i++) {
 
                 int steps = 0;
-                while (!valueList.isEmpty() && i == minuteOfTheDay) {
+                while (!valueList.isEmpty() && i*interval > minuteOfTheDay) {
                     String concatedKeyString = dateKey.concat("T").concat(valueList.getFirst().toString());
                     String value = (String) sharedPrefMap
                             .get(concatedKeyString);
