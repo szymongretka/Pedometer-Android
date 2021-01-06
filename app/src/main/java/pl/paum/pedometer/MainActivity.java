@@ -11,6 +11,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,13 +40,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledTask;
+    private ScheduledFuture<?> stepCounterResetTask;
+    private DataHandler dataHandler;
 
-    private TextView TvSteps;
+    private TextView tvSteps;
 
-    private Button BtnStart;
-    private Button BtnStop;
-    private Button BtnExport;
-    private Button BtnExit;
+    private Button btnStart;
+    private Button btnStop;
+    private Button btnExport;
+    private Button btnExit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,25 +60,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
-        DataHandler dataHandler = new DataHandlerImpl(this);
+        dataHandler = new DataHandlerImpl(this);
         ButtonActionsHandler buttonActionsHandler = new ButtonActionsHandlerImpl(this);
 
         NUM_OF_STEPS = dataHandler.getDailyNumOfSteps();
         PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
 
-        TvSteps = findViewById(R.id.tv_steps);
-        BtnStart = findViewById(R.id.btn_start);
-        BtnStop = findViewById(R.id.btn_stop);
-        BtnExport = findViewById(R.id.btn_export);
-        BtnExit = findViewById(R.id.btn_exit);
+        tvSteps = findViewById(R.id.tv_steps);
+        btnStart = findViewById(R.id.btn_start);
+        btnStop = findViewById(R.id.btn_stop);
+        btnExport = findViewById(R.id.btn_export);
+        btnExit = findViewById(R.id.btn_exit);
 
-        BtnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
-        BtnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
-        BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
-        BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
-
+        btnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
+        btnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
+        btnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
+        btnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
         dailyText = getResources().getString(R.string.daily_text).concat("\n").concat("\n");
-        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
+
+        scheduleResetAtMidnight();
+
+        tvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
         scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
             int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
             PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
@@ -96,15 +104,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onDestroy() {
         super.onDestroy();
         scheduledTask.cancel(false);
+        stepCounterResetTask.cancel(false);
     }
 
     @Override
     public void step(long timeNs) {
         NUM_OF_STEPS++;
-        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
+        tvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
     }
 
     public AppSharedCtx getAppSharedCtx() {
         return appSharedCtx;
+    }
+
+    private long calculateSecondsTo(int targetHour, int targetMinute, int targetSecond){
+        ZoneId currentZone = ZoneId.systemDefault();
+        ZonedDateTime zonedNow = ZonedDateTime.of(LocalDateTime.now(),currentZone);
+        ZonedDateTime zonedTarget = zonedNow.withHour(targetHour).withMinute(targetMinute).withSecond(targetSecond);
+        if(zonedNow.compareTo(zonedTarget) > 0){
+            zonedTarget = zonedTarget.plusDays(1);
+        }
+        return Duration.between(zonedNow, zonedTarget).getSeconds();
+    }
+
+    private void scheduleResetAtMidnight(){
+        stepCounterResetTask = scheduledExecutor.scheduleAtFixedRate(() -> {
+            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
+            dataHandler.saveToMemory(stepDiff);
+
+            //RESET STEPS
+            PREVIOUS_NUM_OF_STEPS = 0;
+            NUM_OF_STEPS = 0;
+        }, calculateSecondsTo(23,59,59), TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
     }
 }
