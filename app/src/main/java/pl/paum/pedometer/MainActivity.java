@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final static int POLL_PERIOD_SEC = 60;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledTask;
+    private DataHandler dataHandler;
 
     private TextView TvSteps;
 
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
-        DataHandler dataHandler = new DataHandlerImpl(this);
+        dataHandler = new DataHandlerImpl(this);
         ButtonActionsHandler buttonActionsHandler = new ButtonActionsHandlerImpl(this);
 
         NUM_OF_STEPS = dataHandler.getDailyNumOfSteps();
