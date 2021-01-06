@@ -11,6 +11,10 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private final static int POLL_PERIOD_SEC = 60;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledTask;
+    private ScheduledFuture<?> stepCounterResetTask;
     private DataHandler dataHandler;
 
     private TextView TvSteps;
@@ -73,6 +78,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
 
         TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
+
+        scheduleResetAtMidnight();
+
         scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
             int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
             PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
@@ -107,5 +115,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public AppSharedCtx getAppSharedCtx() {
         return appSharedCtx;
+    }
+
+    private long calculateSecondsTo(int targetHour, int targetMinute, int targetSecond){
+        ZoneId currentZone = ZoneId.systemDefault();
+        ZonedDateTime zonedNow = ZonedDateTime.of(LocalDateTime.now(),currentZone);
+        ZonedDateTime zonedTarget = zonedNow.withHour(targetHour).withMinute(targetMinute).withSecond(targetSecond);
+        if(zonedNow.compareTo(zonedTarget) > 0){
+            zonedTarget = zonedTarget.plusDays(1);
+        }
+        return Duration.between(zonedNow, zonedTarget).getSeconds();
+    }
+
+    private void scheduleResetAtMidnight(){
+        stepCounterResetTask = scheduledExecutor.scheduleAtFixedRate(() -> {
+            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+            PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
+            dataHandler.saveToMemory(stepDiff);
+
+            //RESET STEPS
+            PREVIOUS_NUM_OF_STEPS = 0;
+            NUM_OF_STEPS = 0;
+        }, calculateSecondsTo(23,59,59), TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
     }
 }
