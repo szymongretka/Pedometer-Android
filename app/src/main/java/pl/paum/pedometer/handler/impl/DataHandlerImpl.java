@@ -15,22 +15,29 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import pl.paum.pedometer.handler.DataHandler;
+import pl.paum.pedometer.util.AppSharedCtx;
 
 public class DataHandlerImpl implements DataHandler {
 
     private Context applicationContext;
     private SharedPreferences pSharedPref;
+    private Map<String, ?> sharedPrefMap;
 
     public DataHandlerImpl(Context context) {
         this.applicationContext = context.getApplicationContext();
         this.pSharedPref = applicationContext
                 .getSharedPreferences("StepCounter", Context.MODE_PRIVATE);
+        this.sharedPrefMap = pSharedPref.getAll();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -46,7 +53,6 @@ public class DataHandlerImpl implements DataHandler {
 
     @Override
     public void exportDataToCsv() {
-        Map<String, ?> sharedPrefMap = pSharedPref.getAll();
         //generate data
         StringBuilder data = new StringBuilder();
 
@@ -66,20 +72,17 @@ public class DataHandlerImpl implements DataHandler {
             }
         }
 
-        Map<String, String> sortedMap = new LinkedHashMap<>();
+        Map<LocalDate, LinkedList<LocalTime>> dateTimeMap = new HashMap<>();
 
         sharedPrefMap.forEach((key, value) -> {
-            String dateKey = key.substring(0, key.indexOf('T'));
-            if (!sortedMap.containsKey(dateKey)) {
-                sortedMap.put(dateKey, ", ".concat(String.valueOf(value)));
-            } else {
-                sortedMap.computeIfPresent(dateKey, (k, v) -> v.concat(", ").concat(String.valueOf(value)));
-            }
+            LocalDate dateKey = LocalDateTime.parse(key).toLocalDate();
+            dateTimeMap.computeIfAbsent(dateKey,
+                    k -> new LinkedList<>()).add(LocalDateTime.parse(key).toLocalTime());
         });
 
-        sortedMap.forEach((key, value) -> {
-            data.append("\n".concat(key).concat(value));
-        });
+        Map<String, String> sortedMap = generateValuesMap(dateTimeMap);
+
+        sortedMap.forEach((key, value) -> data.append("\n".concat(key).concat(value)));
 
         try {
             //saving the file into device
@@ -120,16 +123,55 @@ public class DataHandlerImpl implements DataHandler {
     @Override
     public Integer getDailyNumOfSteps() {
         AtomicInteger sum = new AtomicInteger(0);
-        Map<String, ?> sharedPrefMap = pSharedPref.getAll();
         LocalDate currentDate = LocalDateTime.now().toLocalDate();
 
         sharedPrefMap.forEach((key, value) -> {
-            if(key.substring(0, key.indexOf('T')).equals(currentDate.toString())) {
+            if (key.substring(0, key.indexOf('T')).equals(currentDate.toString())) {
                 sum.addAndGet(Integer.parseInt((String) value));
             }
         });
 
         return sum.get();
+    }
+
+    private Map<String, String> generateValuesMap(Map<LocalDate, LinkedList<LocalTime>> dateTimeMap) {
+        Map<String, String> map = new LinkedHashMap<>();
+
+        int numOfRecords = 24 * 60 * (60 / AppSharedCtx.POLL_PERIOD_SEC);
+
+        for (LocalDate key : dateTimeMap.keySet()) {
+            String dateKey = key.toString();
+            map.put(dateKey, "");
+            LinkedList<LocalTime> valueList = dateTimeMap.get(key)
+                    .stream()
+                    .sorted()
+                    .collect(Collectors.toCollection(LinkedList::new));
+
+            int minuteOfTheDay = valueList.getFirst().withSecond(0).withNano(0).toSecondOfDay() / 60;
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            for (int i = 0; i < numOfRecords; i++) {
+
+                int steps = 0;
+                while (!valueList.isEmpty() && i == minuteOfTheDay) {
+                    String concatedKeyString = dateKey.concat("T").concat(valueList.getFirst().toString());
+                    String value = (String) sharedPrefMap
+                            .get(concatedKeyString);
+                    steps += Integer.parseInt(value);
+                    valueList.removeFirst();
+                    if (!valueList.isEmpty()) {
+                        minuteOfTheDay = valueList.getFirst().withSecond(0).withNano(0).toSecondOfDay() / 60;
+                    }
+                }
+                stringBuilder.append(", ").append(steps);
+
+            }
+
+            map.put(dateKey, stringBuilder.toString());
+        }
+
+        return map;
     }
 
 }

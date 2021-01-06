@@ -29,15 +29,15 @@ import pl.paum.pedometer.listener.StepListener;
 import pl.paum.pedometer.util.AppSharedCtx;
 
 import static pl.paum.pedometer.util.AppSharedCtx.NUM_OF_STEPS;
+import static pl.paum.pedometer.util.AppSharedCtx.POLL_PERIOD_SEC;
 import static pl.paum.pedometer.util.AppSharedCtx.PREVIOUS_NUM_OF_STEPS;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
-    private TextView textView;
+
     private StepDetector simpleStepDetector;
     private AppSharedCtx appSharedCtx;
-    private static final String TEXT_NUM_STEPS = "Your daily progress: \n";
+    private String dailyText;
 
-    private final static int POLL_PERIOD_SEC = 60;
     private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> scheduledTask;
     private ScheduledFuture<?> stepCounterResetTask;
@@ -76,11 +76,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BtnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
         BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
         BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
-
-        TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
-
         scheduleResetAtMidnight();
-
+        dailyText = getResources().getString(R.string.daily_text).concat("\n").concat("\n");
+        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
         scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
             int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
             PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
@@ -103,14 +101,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //TODO: save collection to file
         scheduledTask.cancel(false);
     }
 
     @Override
     public void step(long timeNs) {
         NUM_OF_STEPS++;
-        TvSteps.setText(TEXT_NUM_STEPS.concat(String.valueOf(NUM_OF_STEPS)));
+        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
     }
 
     public AppSharedCtx getAppSharedCtx() {
