@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onDestroy() {
         super.onDestroy();
         scheduledTask.cancel(false);
+        stepCounterResetTask.cancel(false);
     }
 
     @Override
