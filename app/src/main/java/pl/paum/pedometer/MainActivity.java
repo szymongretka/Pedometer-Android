@@ -43,12 +43,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ScheduledFuture<?> stepCounterResetTask;
     private DataHandler dataHandler;
 
-    private TextView TvSteps;
+    private TextView tvSteps;
 
-    private Button BtnStart;
-    private Button BtnStop;
-    private Button BtnExport;
-    private Button BtnExit;
+    private Button btnStart;
+    private Button btnStop;
+    private Button btnExport;
+    private Button btnExit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,19 +66,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         NUM_OF_STEPS = dataHandler.getDailyNumOfSteps();
         PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
 
-        TvSteps = findViewById(R.id.tv_steps);
-        BtnStart = findViewById(R.id.btn_start);
-        BtnStop = findViewById(R.id.btn_stop);
-        BtnExport = findViewById(R.id.btn_export);
-        BtnExit = findViewById(R.id.btn_exit);
+        tvSteps = findViewById(R.id.tv_steps);
+        btnStart = findViewById(R.id.btn_start);
+        btnStop = findViewById(R.id.btn_stop);
+        btnExport = findViewById(R.id.btn_export);
+        btnExit = findViewById(R.id.btn_exit);
 
-        BtnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
-        BtnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
-        BtnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
-        BtnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
-        scheduleResetAtMidnight();
+        btnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
+        btnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
+        btnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
+        btnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
         dailyText = getResources().getString(R.string.daily_text).concat("\n").concat("\n");
-        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
+
+        scheduleResetAtMidnight();
+
+        tvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
         scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
             int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
             PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void step(long timeNs) {
         NUM_OF_STEPS++;
-        TvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
+        tvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
     }
 
     public AppSharedCtx getAppSharedCtx() {
