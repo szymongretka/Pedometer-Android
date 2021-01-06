@@ -54,7 +54,8 @@ public class DataHandlerImpl implements DataHandler {
     }
 
     @Override
-    public void exportDataToCsv() {
+    public void exportDataToCsv(int numOfSteps) {
+        this.saveToMemory(numOfSteps);
         //generate data
         StringBuilder data = new StringBuilder();
 

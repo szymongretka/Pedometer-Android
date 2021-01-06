@@ -72,17 +72,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnExport = findViewById(R.id.btn_export);
         btnExit = findViewById(R.id.btn_exit);
 
+        int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
+
         btnStart.setOnClickListener((View v) -> buttonActionsHandler.startButtonAction());
         btnStop.setOnClickListener((View v) -> buttonActionsHandler.stopButtonAction());
         btnExit.setOnClickListener((View v) -> buttonActionsHandler.exitButtonAction());
-        btnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv());
+        btnExport.setOnClickListener((View v) -> dataHandler.exportDataToCsv(stepDiff));
         dailyText = getResources().getString(R.string.daily_text).concat("\n").concat("\n");
 
         scheduleResetAtMidnight();
 
         tvSteps.setText(dailyText.concat(String.valueOf(NUM_OF_STEPS)));
         scheduledTask = scheduledExecutor.scheduleAtFixedRate(() -> {
-            int stepDiff = NUM_OF_STEPS - PREVIOUS_NUM_OF_STEPS;
             PREVIOUS_NUM_OF_STEPS = NUM_OF_STEPS;
             dataHandler.saveToMemory(stepDiff);
         }, 0, POLL_PERIOD_SEC, TimeUnit.SECONDS);
