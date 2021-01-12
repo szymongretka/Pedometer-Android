@@ -1,4 +1,4 @@
-package application;
+package pl.polsl.paum.gg.view;
 	
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -7,7 +7,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 
-public class HelloFX extends Application {
+public class ChartView extends Application {
 
     @Override
     public void start(Stage stage) {
