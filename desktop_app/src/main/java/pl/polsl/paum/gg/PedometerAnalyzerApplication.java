@@ -8,7 +8,6 @@ public class PedometerAnalyzerApplication {
 	public static void main(String[] args) {
 		ChartView fx = new ChartView();
 		fx.run(args);
-
 	}
 
 }
