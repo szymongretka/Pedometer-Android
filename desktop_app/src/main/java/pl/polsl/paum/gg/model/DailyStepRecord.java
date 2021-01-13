@@ -6,7 +6,7 @@ import java.util.List;
 public class DailyStepRecord {
 
 	private LocalDate date;
-	private List<StepRecord> stepRecordList;
+	private List<StepRecord> stepRecordList; //horizontal
 
 	public LocalDate getDate() {
 		return date;

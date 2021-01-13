@@ -1,16 +1,16 @@
 package pl.polsl.paum.gg.model;
 
-import java.time.OffsetTime;
+import java.time.LocalTime;
 
 public class StepRecord {
-	private OffsetTime time;
+	private LocalTime time;
 	private Integer stepsAmount;
 
-	public OffsetTime getTime() {
+	public LocalTime getTime() {
 		return time;
 	}
 
-	public void setTime(OffsetTime time) {
+	public void setTime(LocalTime time) {
 		this.time = time;
 	}
 
