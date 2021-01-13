@@ -63,19 +63,7 @@ public class DataHandlerImpl implements DataHandler {
 
         data.append("Time/Date, ");
 
-        for (int i = 0; i < 24; i++) {
-            String hour = String.valueOf(i);
-            if (i < 10) {
-                hour = "0".concat(String.valueOf(i));
-            }
-            for (int j = 0; j < samples; j++) {
-                String minute = String.valueOf(j*interval);
-                if (j*interval < 10) {
-                    minute = "0".concat(minute);
-                }
-                data.append(hour.concat(":").concat(minute).concat(", "));
-            }
-        }
+        generateTimeRow(data, samples);
 
         Map<LocalDate, LinkedList<LocalTime>> dateTimeMap = new HashMap<>();
 
@@ -177,6 +165,33 @@ public class DataHandlerImpl implements DataHandler {
         }
 
         return map;
+    }
+
+    private StringBuilder generateTimeRow(StringBuilder data, int samples) {
+        for (int i = 0; i < 23; i++) {
+            String hour = String.valueOf(i);
+            if (i < 10) {
+                hour = "0".concat(String.valueOf(i));
+            }
+            for (int j = 0; j < samples; j++) {
+                String minute = String.valueOf(j*interval);
+                if (j*interval < 10) {
+                    minute = "0".concat(minute);
+                }
+                data.append(hour.concat(":").concat(minute).concat(", "));
+            }
+        }
+        for (int j = 0; j < samples; j++) {
+            String minute = String.valueOf(j*interval);
+            if (j*interval < 10) {
+                minute = "0".concat(minute);
+            }
+            if((j+1)*interval < 60)
+                data.append("23".concat(":").concat(minute).concat(", "));
+            else
+                data.append("23".concat(":").concat(minute));
+        }
+        return data;
     }
 
 }
