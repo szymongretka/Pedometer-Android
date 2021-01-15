@@ -12,13 +12,16 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import pl.polsl.paum.gg.bind.impl.CsvUnmarshallerImpl;
+import pl.polsl.paum.gg.exception.ConversionException;
+
 public class CsvUnmarshallerTest {
 
-	CsvUnmarshaller csvUnmarshaller;
+	CsvUnmarshallerImpl csvUnmarshaller;
 
 	@BeforeEach
 	void init() {
-		csvUnmarshaller = new CsvUnmarshaller();
+		csvUnmarshaller = new CsvUnmarshallerImpl();
 	}
 
 	@Test
@@ -26,7 +29,7 @@ public class CsvUnmarshallerTest {
 		Path path = Paths.get("src", "test", "resources", "stepsWithDates.csv");
 		try {
 			csvUnmarshaller.unmarshalCsvToPojo(Files.newBufferedReader(path));
-		} catch (IOException e) {
+		} catch (IOException | ConversionException e) {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			fail("Exception occured. Stack trace: " + sw.toString());
