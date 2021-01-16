@@ -50,6 +50,12 @@ public class MainController {
 		}
 
 	}
+	
+	@FXML
+	public void onButtonVisualizeClicked() {
+		
+	}
+	
 
 	private void showWarning(String textToDisplay) {
 		Alert alert = new Alert(AlertType.WARNING, textToDisplay);
