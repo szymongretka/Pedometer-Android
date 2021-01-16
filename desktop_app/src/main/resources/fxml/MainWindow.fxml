@@ -33,7 +33,7 @@
          <children>
             <AreaChart fx:id="areaChartSteps" prefWidth="600.0" title="Dzisiaj" HBox.hgrow="ALWAYS">
               <xAxis>
-                <CategoryAxis label="Godziny" side="BOTTOM" />
+                <CategoryAxis fx:id="categoryAxisUnit" label="Godziny" side="BOTTOM" />
               </xAxis>
               <yAxis>
                 <NumberAxis fx:id="numberAxisSteps" label="Kroki" side="LEFT" />
