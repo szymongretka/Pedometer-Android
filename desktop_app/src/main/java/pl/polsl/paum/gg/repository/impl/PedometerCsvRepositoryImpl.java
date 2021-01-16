@@ -1,6 +1,7 @@
 package pl.polsl.paum.gg.repository.impl;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import pl.polsl.paum.gg.model.DailyStepRecord;
 import pl.polsl.paum.gg.model.PedometerCsv;
@@ -16,7 +17,7 @@ public class PedometerCsvRepositoryImpl implements PedometerCsvRepository{
 	
 	public PedometerCsvRepositoryImpl(PedometerCsv pedometerCsv) {
 		super();
-		this.pedometerCsv = pedometerCsv;
+		setSource(pedometerCsv);
 	}
 	
 	@Override
@@ -43,6 +44,14 @@ public class PedometerCsvRepositoryImpl implements PedometerCsvRepository{
 			return null;
 		}
 		return pedometerCsv.getDailyStepRecordList().get(index);
+	}
+	
+	@Override
+	public List<DailyStepRecord> findAllDailyStepRecords(){
+		if(isEmpty()) {
+			return null;
+		}
+		return pedometerCsv.getDailyStepRecordList();
 	}
 	
 	@Override

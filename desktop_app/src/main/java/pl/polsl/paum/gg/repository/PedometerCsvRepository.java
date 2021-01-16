@@ -1,6 +1,7 @@
 package pl.polsl.paum.gg.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import pl.polsl.paum.gg.model.DailyStepRecord;
 import pl.polsl.paum.gg.model.PedometerCsv;
@@ -14,5 +15,7 @@ public interface PedometerCsvRepository {
 	boolean isEmpty();
 
 	DailyStepRecord findDailyStepRecordByIndex(int index);
+
+	List<DailyStepRecord> findAllDailyStepRecords();
 
 }
