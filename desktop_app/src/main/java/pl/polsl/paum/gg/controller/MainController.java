@@ -3,11 +3,18 @@ package pl.polsl.paum.gg.controller;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.Duration;
+import java.util.LinkedList;
+import java.util.List;
 
 import javafx.fxml.FXML;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -15,12 +22,16 @@ import javafx.stage.Window;
 import pl.polsl.paum.gg.bind.CsvUnmarshaller;
 import pl.polsl.paum.gg.bind.impl.CsvUnmarshallerImpl;
 import pl.polsl.paum.gg.exception.ConversionException;
+import pl.polsl.paum.gg.model.DailyStepRecord;
 import pl.polsl.paum.gg.model.PedometerCsv;
+import pl.polsl.paum.gg.model.StepRecord;
+import pl.polsl.paum.gg.repository.PedometerCsvRepository;
+import pl.polsl.paum.gg.repository.impl.PedometerCsvRepositoryImpl;
 
 public class MainController {
 
 	private final CsvUnmarshaller csvUnmarshaller = new CsvUnmarshallerImpl();
-	private PedometerCsv pedometerCsv = null;
+	private final PedometerCsvRepository repository = new PedometerCsvRepositoryImpl();
 
 	@FXML
 	private Window window;
@@ -41,12 +52,18 @@ public class MainController {
 		fileChooser.setInitialFileName("data.csv");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter("CSV files (*.csv)", "*.csv"));
 		sourceFile = fileChooser.showOpenDialog(window);
+		if (sourceFile == null) {
+			return;
+		}
 		try {
-			pedometerCsv = csvUnmarshaller.unmarshalCsvToPojo(new FileReader(sourceFile));
+			repository.setSource(csvUnmarshaller.unmarshalCsvToPojo(new FileReader(sourceFile)));
+			initializeDatePickerStartingDay();
 		} catch (FileNotFoundException e) {
-			showWarning("Nie uda³o siê otworzyæ podanego pliku.");
+			showWarning("Nie udaï¿½o siï¿½ otworzyï¿½ podanego pliku.");
+			return;
 		} catch (ConversionException e) {
-			showWarning("Zawartoœæ wskazanego pliku jest uszkodzona i nie uda³o siê jej przetworzyæ.");
+			showWarning("Zawartoï¿½ï¿½ wskazanego pliku jest uszkodzona i nie udaï¿½o siï¿½ jej przetworzyï¿½.");
+			return;
 		}
 
 	}
@@ -59,7 +76,7 @@ public class MainController {
 
 	private void showWarning(String textToDisplay) {
 		Alert alert = new Alert(AlertType.WARNING, textToDisplay);
-		alert.getDialogPane().setHeaderText("Wyst¹pi³ b³¹d");
+		alert.getDialogPane().setHeaderText("Wystï¿½piï¿½ bï¿½ï¿½d");
 		alert.showAndWait();
 	}
 
